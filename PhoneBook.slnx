@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Domain/">
+    <Project Path="Domain/PhoneBook.Domain/PhoneBook.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Infrastructure/PhoneBook.Infrastructure/PhoneBook.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Presentation/">
+    <Project Path="Presentation/ContactInfoService/ContactInfoService.csproj" />
+    <Project Path="Presentation/ContactService/ContactService.csproj" />
+  </Folder>
+  <Folder Name="/Services/">
+    <Project Path="Services/PhoneBook.Services/PhoneBook.Services.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/PhoneBook.Tests/PhoneBook.Tests.csproj" />
+  </Folder>
+</Solution>
