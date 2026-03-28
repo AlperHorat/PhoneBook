@@ -1,20 +1,13 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY ["Presentation/ContactInfoService/ContactInfoService.csproj", "Presentation/ContactInfoService/"]
-COPY ["Domain/PhoneBook.Domain/PhoneBook.Domain.csproj", "Domain/PhoneBook.Domain/"]
-COPY ["Infrastructure/PhoneBook.Infrastructure/PhoneBook.Infrastructure.csproj", "Infrastructure/PhoneBook.Infrastructure/"]
-COPY ["Services/PhoneBook.Services/PhoneBook.Services.csproj", "Services/PhoneBook.Services/"]
-COPY ["Contracts/PhoneBook.Contracts/PhoneBook.Contracts.csproj", "Contracts/PhoneBook.Contracts/"]
-
-RUN dotnet restore "Presentation/ContactInfoService/ContactInfoService.csproj"
-
 COPY . .
-WORKDIR "/src/Presentation/ContactInfoService"
+WORKDIR /src/Presentation/ContactInfoService
+RUN dotnet restore "ContactInfoService.csproj"
 RUN dotnet build "ContactInfoService.csproj" -c Release -o /app/build
 
 FROM build AS publish
