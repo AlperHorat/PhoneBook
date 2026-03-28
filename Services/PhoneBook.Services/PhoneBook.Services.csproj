@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Domain\PhoneBook.Domain\PhoneBook.Domain.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\PhoneBook.Infrastructure\PhoneBook.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
