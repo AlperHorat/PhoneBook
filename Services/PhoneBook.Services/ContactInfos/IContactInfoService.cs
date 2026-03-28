@@ -8,4 +8,5 @@ public interface IContactInfoService
     Task<ContactInfo> CreateAsync(ContactInfo contactInfo);
     Task DeleteAsync(Guid id);
     Task SoftDeleteAsync(Guid id);
+    Task SoftDeleteByContactIdAsync(Guid contactId);
 }

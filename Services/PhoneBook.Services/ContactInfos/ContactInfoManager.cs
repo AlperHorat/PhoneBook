@@ -45,4 +45,8 @@ public class ContactInfoManager : IContactInfoService
 
         await _contactInfoRepository.SoftDeleteAsync(id);
     }
+    public async Task SoftDeleteByContactIdAsync(Guid contactId)
+    {
+        await _contactInfoRepository.SoftDeleteByContactIdAsync(contactId);
+    }
 }
