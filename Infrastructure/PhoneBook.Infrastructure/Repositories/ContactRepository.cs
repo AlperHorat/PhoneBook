@@ -5,36 +5,49 @@ namespace PhoneBook.Infrastructure.Repositories;
 
 public class ContactRepository : IContactRepository
 {
-    private readonly ContactDbContext _db;
+    private readonly ContactDbContext _dbContext;
 
-    public ContactRepository(ContactDbContext db)
+    public ContactRepository(ContactDbContext dbContext)
     {
-        _db = db;
+        _dbContext = dbContext;
     }
 
     public async Task<List<Contact>> GetAllAsync()
     {
-        return await _db.Contacts.ToListAsync();
+        return await _dbContext.Contacts
+            .Where(x => !x.IsDeleted)
+            .ToListAsync();
     }
 
     public async Task<Contact?> GetByIdAsync(Guid id)
     {
-        return await _db.Contacts.FindAsync(id);
+        return await _dbContext.Contacts
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
     }
 
     public async Task AddAsync(Contact contact)
     {
-        await _db.Contacts.AddAsync(contact);
-        await _db.SaveChangesAsync();
+        await _dbContext.Contacts.AddAsync(contact);
+        await _dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var contact = await _db.Contacts.FindAsync(id);
+        var contact = await _dbContext.Contacts.FindAsync(id);
         if (contact != null)
         {
-            _db.Contacts.Remove(contact);
-            await _db.SaveChangesAsync();
+            _dbContext.Contacts.Remove(contact);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+    public async Task SoftDeleteAsync(Guid id)
+    {
+        var contact = await _dbContext.Contacts.FindAsync(id);
+
+        if (contact is not null)
+        {
+            contact.SoftDelete();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

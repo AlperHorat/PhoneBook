@@ -40,4 +40,13 @@ public class ContactManager : IContactService
 
         await _contactRepository.DeleteAsync(id);
     }
+    public async Task SoftDeleteAsync(Guid id)
+    {
+        var entity = await _contactRepository.GetByIdAsync(id);
+
+        if (entity is null)
+            throw new KeyNotFoundException($"Contact not found. Id: {id}");
+
+        await _contactRepository.SoftDeleteAsync(id);
+    }
 }

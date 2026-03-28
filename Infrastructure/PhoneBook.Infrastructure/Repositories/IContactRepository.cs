@@ -8,5 +8,6 @@ namespace PhoneBook.Infrastructure.Repositories
         Task<Contact?> GetByIdAsync(Guid id);
         Task AddAsync(Contact contact);
         Task DeleteAsync(Guid id);
+        Task SoftDeleteAsync(Guid id);
     }
 }
