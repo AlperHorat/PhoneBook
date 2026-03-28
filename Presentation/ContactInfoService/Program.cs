@@ -1,3 +1,4 @@
+using ContactInfoService.Messaging;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Infrastructure.Data;
 using PhoneBook.Infrastructure.Repositories;
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<ContactInfoDbContext>(options =>
 
 builder.Services.AddScoped<IContactInfoRepository, ContactInfoRepository>();
 builder.Services.AddScoped<IContactInfoService, ContactInfoManager>();
+builder.Services.AddHostedService<ContactDeletedConsumer>();
 
 var app = builder.Build();
 

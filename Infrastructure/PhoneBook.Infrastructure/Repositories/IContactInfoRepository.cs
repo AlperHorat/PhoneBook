@@ -9,4 +9,5 @@ public interface IContactInfoRepository
     Task AddAsync(ContactInfo contactInfo);
     Task DeleteAsync(Guid id);
     Task SoftDeleteAsync(Guid id);
+    Task SoftDeleteByContactIdAsync(Guid contactId);
 }

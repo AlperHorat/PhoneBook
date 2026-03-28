@@ -53,4 +53,17 @@ public class ContactInfoRepository : IContactInfoRepository
             await _dbContext.SaveChangesAsync();
         }
     }
+    public async Task SoftDeleteByContactIdAsync(Guid contactId)
+    {
+        var entities = await _dbContext.ContactInfos
+            .Where(x => x.ContactId == contactId && !x.IsDeleted)
+            .ToListAsync();
+
+        foreach (var entity in entities)
+        {
+            entity.SoftDelete();
+        }
+
+        await _dbContext.SaveChangesAsync();
+    }
 }
