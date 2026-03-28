@@ -3,11 +3,11 @@ using PhoneBook.Infrastructure.Repositories;
 
 namespace PhoneBook.Services.Contacts;
 
-public class ContactService : IContactService
+public class ContactManager : IContactService
 {
     private readonly IContactRepository _contactRepository;
 
-    public ContactService(IContactRepository contactRepository)
+    public ContactManager(IContactRepository contactRepository)
     {
         _contactRepository = contactRepository;
     }

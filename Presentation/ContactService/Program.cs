@@ -12,7 +12,7 @@ builder.Services.AddDbContext<ContactDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
-builder.Services.AddScoped<IContactService, ContactService>();
+builder.Services.AddScoped<IContactService, ContactManager>();
 
 var app = builder.Build();
 
