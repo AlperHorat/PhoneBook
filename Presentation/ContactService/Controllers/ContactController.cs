@@ -1,4 +1,5 @@
-﻿using ContactService.Dtos;
+﻿using ContactService.Clients;
+using ContactService.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using PhoneBook.Domain.Entities;
 using PhoneBook.Services.Contacts;
@@ -10,10 +11,14 @@ namespace ContactService.Controllers;
 public class ContactController : ControllerBase
 {
     private readonly IContactService _contactService;
+    private readonly IContactInfoApiClient _contactInfoApiClient;
 
-    public ContactController(IContactService contactService)
+    public ContactController(
+        IContactService contactService,
+        IContactInfoApiClient contactInfoApiClient)
     {
         _contactService = contactService;
+        _contactInfoApiClient = contactInfoApiClient;
     }
 
     [HttpGet]
@@ -55,5 +60,27 @@ public class ContactController : ControllerBase
     {
         await _contactService.SoftDeleteAsync(id);
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}/detail")]
+    public async Task<IActionResult> GetDetail(Guid id)
+    {
+        var contact = await _contactService.GetByIdAsync(id);
+
+        if (contact is null)
+            return NotFound();
+
+        var contactInfos = await _contactInfoApiClient.GetByContactIdAsync(id);
+
+        var response = new ContactDetailResponse
+        {
+            Id = contact.Id,
+            Name = contact.Name,
+            Surname = contact.Surname,
+            Company = contact.Company,
+            ContactInfos = contactInfos
+        };
+
+        return Ok(response);
     }
 }
