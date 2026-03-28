@@ -1,3 +1,4 @@
+using ContactService.Clients;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Infrastructure.Repositories;
 using PhoneBook.Services.Contacts;
@@ -13,6 +14,11 @@ builder.Services.AddDbContext<ContactDbContext>(options =>
 
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IContactService, ContactManager>();
+
+builder.Services.AddHttpClient<IContactInfoApiClient, ContactInfoApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:ContactInfoService"]!);
+});
 
 var app = builder.Build();
 
