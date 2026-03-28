@@ -5,9 +5,9 @@ namespace PhoneBook.Infrastructure.Repositories;
 
 public class ContactRepository : IContactRepository
 {
-    private readonly AppDbContext _db;
+    private readonly ContactDbContext _db;
 
-    public ContactRepository(AppDbContext db)
+    public ContactRepository(ContactDbContext db)
     {
         _db = db;
     }
