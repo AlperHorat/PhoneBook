@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: phonebook-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_DATABASES: phonebookcontactdb,phonebookcontactinfodb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: phonebook-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  contactinfoservice:
+    build:
+      context: .
+      dockerfile: Presentation/ContactInfoService/Dockerfile
+    container_name: phonebook-contactinfoservice
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=phonebookcontactinfodb;Username=postgres;Password=postgres
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__UserName: guest
+      RabbitMq__Password: guest
+    ports:
+      - "5001:8080"
+
+  contactservice:
+    build:
+      context: .
+      dockerfile: Presentation/ContactService/Dockerfile
+    container_name: phonebook-contactservice
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      contactinfoservice:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=phonebookcontactdb;Username=postgres;Password=postgres
+      ServiceUrls__ContactInfoService: http://contactinfoservice:8080/
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__UserName: guest
+      RabbitMq__Password: guest
+    ports:
+      - "5003:8080"
+
+volumes:
+  postgres_data:
