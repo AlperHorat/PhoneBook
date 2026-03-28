@@ -1,4 +1,5 @@
 using ContactService.Clients;
+using ContactService.Messaging;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Infrastructure.Repositories;
 using PhoneBook.Services.Contacts;
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<ContactDbContext>(options =>
 
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IContactService, ContactManager>();
+builder.Services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
 
 builder.Services.AddHttpClient<IContactInfoApiClient, ContactInfoApiClient>(client =>
 {

@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Contracts/">
+    <Project Path="Contracts/PhoneBook.Contracts/PhoneBook.Contracts.csproj" Id="5c619c08-1262-49b4-81e8-00d59680bdbd" />
+  </Folder>
   <Folder Name="/Domain/">
     <Project Path="Domain/PhoneBook.Domain/PhoneBook.Domain.csproj" />
   </Folder>

@@ -1,6 +1,8 @@
 ﻿using ContactService.Clients;
 using ContactService.Dtos;
+using ContactService.Messaging;
 using Microsoft.AspNetCore.Mvc;
+using PhoneBook.Contracts.Events;
 using PhoneBook.Domain.Entities;
 using PhoneBook.Services.Contacts;
 
@@ -12,13 +14,16 @@ public class ContactController : ControllerBase
 {
     private readonly IContactService _contactService;
     private readonly IContactInfoApiClient _contactInfoApiClient;
+    private readonly IEventPublisher _eventPublisher;
 
     public ContactController(
-        IContactService contactService,
-        IContactInfoApiClient contactInfoApiClient)
+      IContactService contactService,
+      IContactInfoApiClient contactInfoApiClient,
+      IEventPublisher eventPublisher)
     {
         _contactService = contactService;
         _contactInfoApiClient = contactInfoApiClient;
+        _eventPublisher = eventPublisher;
     }
 
     [HttpGet]
@@ -59,6 +64,14 @@ public class ContactController : ControllerBase
     public async Task<IActionResult> SoftDelete(Guid id)
     {
         await _contactService.SoftDeleteAsync(id);
+
+        var contactDeletedEvent = new ContactDeletedEvent
+        {
+            ContactId = id
+        };
+
+        await _eventPublisher.PublishAsync("contact-deleted-queue", contactDeletedEvent);
+
         return NoContent();
     }
 
