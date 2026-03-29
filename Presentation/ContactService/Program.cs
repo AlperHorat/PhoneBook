@@ -18,6 +18,8 @@ builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IContactService, ContactManager>();
 builder.Services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
 
+builder.Services.AddHealthChecks();
+
 builder.Services.AddHttpClient<IContactInfoApiClient, ContactInfoApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:ContactInfoService"]!);
@@ -32,6 +34,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())
 {

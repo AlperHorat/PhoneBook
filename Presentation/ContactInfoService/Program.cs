@@ -18,6 +18,8 @@ builder.Services.AddScoped<IContactInfoRepository, ContactInfoRepository>();
 builder.Services.AddScoped<IContactInfoService, ContactInfoManager>();
 builder.Services.AddHostedService<ContactDeletedConsumer>();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -27,6 +29,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())
 {

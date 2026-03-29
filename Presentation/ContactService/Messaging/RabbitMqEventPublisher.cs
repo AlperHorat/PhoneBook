@@ -7,10 +7,14 @@ namespace ContactService.Messaging;
 public class RabbitMqEventPublisher : IEventPublisher
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<RabbitMqEventPublisher> _logger;
 
-    public RabbitMqEventPublisher(IConfiguration configuration)
+    public RabbitMqEventPublisher(
+        IConfiguration configuration,
+        ILogger<RabbitMqEventPublisher> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task PublishAsync<T>(string queueName, T message)
@@ -40,5 +44,10 @@ public class RabbitMqEventPublisher : IEventPublisher
             exchange: string.Empty,
             routingKey: queueName,
             body: body);
+
+        _logger.LogInformation(
+            "Published event {EventType} to queue {QueueName}",
+            typeof(T).Name,
+            queueName);
     }
 }
