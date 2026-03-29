@@ -11,12 +11,15 @@ This project is a microservices-based phonebook application developed using .NET
 * Contact management (create, list, delete)
 * Contact information management (phone, email, location)
 * Soft delete mechanism
+* Domain-level validation to ensure data integrity
 * Synchronous communication between services (HTTP)
 * Asynchronous communication using RabbitMQ
 * Separate databases per service
 * Fully containerized environment using Docker Compose
 * Unit testing for service layer
 * Global exception handling middleware
+* Basic application logging
+* Health check endpoints for service monitoring
 
 ---
 
@@ -108,6 +111,15 @@ password: guest
 
 ---
 
+# 🏥 Health Checks
+
+* http://localhost:5001/health
+* http://localhost:5003/health
+
+These endpoints indicate whether the services are running and healthy.
+
+---
+
 # 🧪 Example Workflow
 
 1. Create a contact via ContactService
@@ -127,6 +139,37 @@ Global exception middleware is implemented:
 | KeyNotFoundException | 404         |
 | ArgumentException    | 400         |
 | Other Exceptions     | 500         |
+
+---
+
+# 🧪 Validation
+
+Validation is implemented at the domain level:
+
+* Contact entity validates required fields (e.g., Name)
+* ContactInfo entity validates:
+
+  * Required content
+  * Email format (basic validation)
+  * Phone number length
+
+This ensures invalid entities cannot be created.
+
+---
+
+# 📊 Logging
+
+Basic logging is implemented using built-in ASP.NET Core logging:
+
+* Exception logs via middleware
+* Event publishing logs in RabbitMQ publisher
+* Event consumption logs in RabbitMQ consumer
+
+Logs can be viewed via:
+
+```bash
+docker logs <container-name>
+```
 
 ---
 
@@ -152,6 +195,7 @@ dotnet test
 * RabbitMQ for eventual consistency and asynchronous processing
 * HTTP communication for real-time data retrieval
 * Soft delete strategy to preserve data integrity
+* Domain-level validation for enforcing business rules
 * Layered architecture inspired by Clean Architecture principles
 
 ---
@@ -159,7 +203,7 @@ dotnet test
 # 📎 Notes
 
 * Authentication and authorization are not included, as the focus of this project is microservice communication and infrastructure. In a real-world scenario, JWT-based authentication could be implemented.
-* The focus of this project is microservice communication and infrastructure setup
+* Basic logging is implemented; in production, centralized logging (e.g., Serilog, ELK) could be added
 
 ---
 
