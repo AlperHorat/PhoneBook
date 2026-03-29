@@ -1,3 +1,6 @@
+using ContactService.Clients;
+using ContactService.Messaging;
+using ContactService.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Infrastructure.Repositories;
 using PhoneBook.Services.Contacts;
@@ -13,6 +16,14 @@ builder.Services.AddDbContext<ContactDbContext>(options =>
 
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 builder.Services.AddScoped<IContactService, ContactManager>();
+builder.Services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
+
+builder.Services.AddHealthChecks();
+
+builder.Services.AddHttpClient<IContactInfoApiClient, ContactInfoApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:ContactInfoService"]!);
+});
 
 var app = builder.Build();
 
@@ -20,6 +31,16 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+app.UseMiddleware<ExceptionMiddleware>();
+
+app.MapHealthChecks("/health");
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ContactDbContext>();
+    dbContext.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

@@ -10,7 +10,7 @@ namespace PhoneBook.Domain.Entities
         public Contact(string name, string surname, string company)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new Exception("Name is required");
+                throw new ArgumentException("Name is required", nameof(name));
 
             Name = name;
             Surname = surname;

@@ -1,5 +1,9 @@
-﻿using ContactService.Dtos;
+﻿using ContactService.Clients;
+using ContactService.Dtos;
+using ContactService.Messaging;
 using Microsoft.AspNetCore.Mvc;
+using PhoneBook.Contracts.Events;
+using PhoneBook.Contracts.Constants;
 using PhoneBook.Domain.Entities;
 using PhoneBook.Services.Contacts;
 
@@ -10,10 +14,17 @@ namespace ContactService.Controllers;
 public class ContactController : ControllerBase
 {
     private readonly IContactService _contactService;
+    private readonly IContactInfoApiClient _contactInfoApiClient;
+    private readonly IEventPublisher _eventPublisher;
 
-    public ContactController(IContactService contactService)
+    public ContactController(
+      IContactService contactService,
+      IContactInfoApiClient contactInfoApiClient,
+      IEventPublisher eventPublisher)
     {
         _contactService = contactService;
+        _contactInfoApiClient = contactInfoApiClient;
+        _eventPublisher = eventPublisher;
     }
 
     [HttpGet]
@@ -54,6 +65,36 @@ public class ContactController : ControllerBase
     public async Task<IActionResult> SoftDelete(Guid id)
     {
         await _contactService.SoftDeleteAsync(id);
+
+        var contactDeletedEvent = new ContactDeletedEvent
+        {
+            ContactId = id
+        };
+
+        await _eventPublisher.PublishAsync(RabbitMqQueues.ContactDeleted, contactDeletedEvent);
+
         return NoContent();
+    }
+
+    [HttpGet("{id:guid}/detail")]
+    public async Task<IActionResult> GetDetail(Guid id)
+    {
+        var contact = await _contactService.GetByIdAsync(id);
+
+        if (contact is null)
+            return NotFound();
+
+        var contactInfos = await _contactInfoApiClient.GetByContactIdAsync(id);
+
+        var response = new ContactDetailResponse
+        {
+            Id = contact.Id,
+            Name = contact.Name,
+            Surname = contact.Surname,
+            Company = contact.Company,
+            ContactInfos = contactInfos
+        };
+
+        return Ok(response);
     }
 }
