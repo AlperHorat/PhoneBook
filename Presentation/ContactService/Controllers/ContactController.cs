@@ -3,6 +3,7 @@ using ContactService.Dtos;
 using ContactService.Messaging;
 using Microsoft.AspNetCore.Mvc;
 using PhoneBook.Contracts.Events;
+using PhoneBook.Contracts.Constants;
 using PhoneBook.Domain.Entities;
 using PhoneBook.Services.Contacts;
 
@@ -70,7 +71,7 @@ public class ContactController : ControllerBase
             ContactId = id
         };
 
-        await _eventPublisher.PublishAsync("contact-deleted-queue", contactDeletedEvent);
+        await _eventPublisher.PublishAsync(RabbitMqQueues.ContactDeleted, contactDeletedEvent);
 
         return NoContent();
     }

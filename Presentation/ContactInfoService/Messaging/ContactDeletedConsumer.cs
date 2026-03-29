@@ -1,6 +1,9 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using PhoneBook.Contracts.Events;
+using PhoneBook.Contracts.Constants;
 using PhoneBook.Services.ContactInfos;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -11,13 +14,18 @@ public class ContactDeletedConsumer : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<ContactDeletedConsumer> _logger;
     private IConnection? _connection;
     private IChannel? _channel;
 
-    public ContactDeletedConsumer(IServiceScopeFactory scopeFactory, IConfiguration configuration)
+    public ContactDeletedConsumer(
+        IServiceScopeFactory scopeFactory,
+        IConfiguration configuration,
+        ILogger<ContactDeletedConsumer> logger)
     {
         _scopeFactory = scopeFactory;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -34,12 +42,14 @@ public class ContactDeletedConsumer : BackgroundService
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
         await _channel.QueueDeclareAsync(
-            queue: "contact-deleted-queue",
+            queue: RabbitMqQueues.ContactDeleted,
             durable: false,
             exclusive: false,
             autoDelete: false,
             arguments: null,
             cancellationToken: cancellationToken);
+
+        _logger.LogInformation("RabbitMQ consumer started and listening to queue {QueueName}", RabbitMqQueues.ContactDeleted);
 
         await base.StartAsync(cancellationToken);
     }
@@ -60,17 +70,28 @@ public class ContactDeletedConsumer : BackgroundService
 
             if (message is not null)
             {
+                _logger.LogInformation(
+                    "Consumed ContactDeletedEvent for contact {ContactId}",
+                    message.ContactId);
+
                 using var scope = _scopeFactory.CreateScope();
                 var contactInfoService = scope.ServiceProvider.GetRequiredService<IContactInfoService>();
 
                 await contactInfoService.SoftDeleteByContactIdAsync(message.ContactId);
+
+                _logger.LogInformation(
+                    "Soft deleted related contact infos for contact {ContactId}",
+                    message.ContactId);
             }
 
-            await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
+            await _channel.BasicAckAsync(
+                ea.DeliveryTag,
+                multiple: false,
+                cancellationToken: stoppingToken);
         };
 
         await _channel.BasicConsumeAsync(
-            queue: "contact-deleted-queue",
+            queue: RabbitMqQueues.ContactDeleted,
             autoAck: false,
             consumer: consumer,
             cancellationToken: stoppingToken);
@@ -83,6 +104,8 @@ public class ContactDeletedConsumer : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("RabbitMQ consumer is stopping");
+
         if (_channel is not null)
             await _channel.CloseAsync(cancellationToken);
 
