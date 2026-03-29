@@ -1,4 +1,5 @@
 using ContactInfoService.Messaging;
+using ContactInfoService.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using PhoneBook.Infrastructure.Data;
 using PhoneBook.Infrastructure.Repositories;
@@ -24,6 +25,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
